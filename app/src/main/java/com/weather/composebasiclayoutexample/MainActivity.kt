@@ -1,6 +1,5 @@
 package com.weather.composebasiclayoutexample
 
-import android.content.res.Resources.Theme
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,7 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -23,22 +22,28 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.weather.composebasiclayoutexample.ui.theme.ComposeBasicLayoutExampleTheme
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,17 +56,90 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TestApp(modifier: Modifier) {
-    Column(
-        modifier = Modifier
-    ) {
-        SearchBar(modifier = modifier)
-        AlignYourBodyRow()
-        FavoriteCollectionGrid()
+    Scaffold(
+        bottomBar = { SootheBottomNavigation() }
+    ) { padding ->
+        HomeScreen(Modifier.padding(padding).background(color = androidx.compose.material.MaterialTheme.colors.background))
     }
 }
 
+@Composable
+private fun SootheBottomNavigation(modifier: Modifier = Modifier) {
+    BottomNavigation(
+        modifier,
+        backgroundColor = MaterialTheme.colorScheme.background
+    ) {
+        BottomNavigationItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Send,
+                    contentDescription = null
+                )
+            },
+            label = {
+                Text(text = stringResource(id = R.string.bottom_navigation_home))
+            },
+            selected = true,
+            onClick = { }
+        )
+        BottomNavigationItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = null
+                )
+            },
+            label = {
+                Text(stringResource(R.string.bottom_navigation_profile))
+            },
+            selected = true,
+            onClick = { /*TODO*/ }
+        )
+    }
+}
+
+@Composable
+fun HomeScreen(modifier: Modifier = Modifier) {
+    Column(
+        modifier
+            .verticalScroll(rememberScrollState())
+            .padding(vertical = 16.dp)
+    ) {
+        Spacer(modifier = Modifier.height(16.dp))
+        SearchBar(Modifier.padding(horizontal = 16.dp))
+        HomeSection(title = R.string.align_your_body) {
+            AlignYourBodyRow()
+        }
+        HomeSection(title = R.string.favorite_collections) {
+            FavoriteCollectionGrid()
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+
+    }
+}
+
+@Composable
+fun HomeSection(
+    @StringRes title: Int,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Column(modifier) {
+        Text(
+            text = stringResource(id = title).uppercase(Locale.getDefault()),
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier
+                .paddingFromBaseline(top = 40.dp, bottom = 8.dp)
+                .padding(horizontal = 16.dp)
+        )
+        content()
+    }
+}
+
+//아이콘 리사이클러
 @Composable
 fun AlignYourBodyRow(
     modifier: Modifier = Modifier
@@ -72,11 +150,12 @@ fun AlignYourBodyRow(
         modifier = Modifier
     ) {
         items(10) { item ->
-            AlignYourBodyElement(drawable = R.drawable.ic_launcher_foreground, text = R.string.name)
+            AlignYourBodyElement(drawable = R.drawable.ic_launcher_background, text = R.string.name)
         }
     }
 }
 
+//몸 아이콘
 @Composable
 fun AlignYourBodyElement(
     modifier: Modifier = Modifier,
@@ -101,6 +180,7 @@ fun AlignYourBodyElement(
     }
 }
 
+//검색창
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBar(modifier: Modifier = Modifier) {
@@ -125,6 +205,7 @@ fun SearchBar(modifier: Modifier = Modifier) {
     )
 }
 
+//컬렉션 그리드
 @Composable
 fun FavoriteCollectionGrid(
     modifier: Modifier = Modifier
@@ -146,6 +227,7 @@ fun FavoriteCollectionGrid(
     }
 }
 
+//즐겨찾는 컬렉션 카드
 @Composable
 fun FavoriteCollectionCard(
     modifier: Modifier = Modifier,
@@ -171,10 +253,19 @@ fun FavoriteCollectionCard(
     }
 }
 
-
-@Preview(showBackground = true)
+@Preview(showBackground = true, backgroundColor = 0xFFF0EAE2)
 @Composable
-fun GreetingPreview() {
+fun HomeSectionPreview() {
+    ComposeBasicLayoutExampleTheme() {
+        HomeSection(title = R.string.align_your_body) {
+            AlignYourBodyRow()
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF0EAE2)
+@Composable
+fun MainPreview() {
     ComposeBasicLayoutExampleTheme {
         TestApp(modifier = Modifier)
     }
